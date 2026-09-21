@@ -1,0 +1,339 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: bookings
+    description: Customer booking operations
+  - name: admin
+    description: Admin booking operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /bookings:
+    get:
+      operationId: listBookings
+      tags: [bookings]
+      summary: List bookings for a customer device
+      parameters:
+        - name: customerKey
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Customer bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Booking"
+        "400":
+          description: Invalid customer key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createBooking
+      tags: [bookings]
+      summary: Create a booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingInput"
+      responses:
+        "201":
+          description: Created booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+        "400":
+          description: Invalid booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /bookings/{id}:
+    patch:
+      operationId: updateCustomerBooking
+      tags: [bookings]
+      summary: Update a customer booking
+      parameters:
+        - $ref: "#/components/parameters/BookingId"
+        - name: customerKey
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingUpdate"
+      responses:
+        "200":
+          description: Updated booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+        "400":
+          description: Invalid booking update
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Booking not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/login:
+    post:
+      operationId: adminLogin
+      tags: [admin]
+      summary: Start an admin session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminLoginInput"
+      responses:
+        "200":
+          description: Admin session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSession"
+        "401":
+          description: Invalid admin credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/logout:
+    post:
+      operationId: adminLogout
+      tags: [admin]
+      summary: End an admin session
+      responses:
+        "204":
+          description: Admin session ended
+  /admin/session:
+    get:
+      operationId: getAdminSession
+      tags: [admin]
+      summary: Check the current admin session
+      responses:
+        "200":
+          description: Current session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSession"
+  /admin/bookings:
+    get:
+      operationId: listAdminBookings
+      tags: [admin]
+      summary: List all bookings for admin
+      parameters:
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Admin booking list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Booking"
+        "401":
+          description: Admin authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/bookings/{id}:
+    patch:
+      operationId: updateAdminBooking
+      tags: [admin]
+      summary: Update a booking from admin
+      parameters:
+        - $ref: "#/components/parameters/BookingId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingUpdate"
+      responses:
+        "200":
+          description: Updated admin booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+        "401":
+          description: Admin authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Booking not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  parameters:
+    BookingId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+    Booking:
+      type: object
+      required:
+        - id
+        - customerKey
+        - customerName
+        - customerPhone
+        - title
+        - detail
+        - status
+        - partner
+        - date
+        - time
+        - address
+        - method
+        - area
+        - price
+        - createdAt
+        - updatedAt
+      properties:
+        id: { type: string }
+        customerKey: { type: string }
+        customerName: { type: string }
+        customerPhone: { type: string }
+        title: { type: string }
+        detail: { type: string }
+        status: { type: string }
+        partner: { type: string }
+        date: { type: string }
+        time: { type: string }
+        address: { type: string }
+        method: { type: string }
+        area: { type: string }
+        price: { type: integer }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    BookingInput:
+      type: object
+      required:
+        - id
+        - customerKey
+        - customerName
+        - customerPhone
+        - title
+        - detail
+        - status
+        - partner
+        - date
+        - time
+        - address
+        - method
+        - area
+        - price
+      properties:
+        id: { type: string, minLength: 1 }
+        customerKey: { type: string, minLength: 1 }
+        customerName: { type: string, minLength: 1 }
+        customerPhone: { type: string, minLength: 1 }
+        title: { type: string, minLength: 1 }
+        detail: { type: string, minLength: 1 }
+        status: { type: string, minLength: 1 }
+        partner: { type: string, minLength: 1 }
+        date: { type: string, minLength: 1 }
+        time: { type: string, minLength: 1 }
+        address: { type: string, minLength: 1 }
+        method: { type: string, minLength: 1 }
+        area: { type: string, minLength: 1 }
+        price: { type: integer, minimum: 0 }
+    BookingUpdate:
+      type: object
+      properties:
+        status: { type: string, minLength: 1 }
+        partner: { type: string, minLength: 1 }
+        date: { type: string, minLength: 1 }
+        time: { type: string, minLength: 1 }
+        address: { type: string, minLength: 1 }
+        method: { type: string, minLength: 1 }
+        area: { type: string, minLength: 1 }
+        detail: { type: string, minLength: 1 }
+    AdminLoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, minLength: 1 }
+        password: { type: string, minLength: 1 }
+    AdminSession:
+      type: object
+      required: [authenticated]
+      properties:
+        authenticated: { type: boolean }
+        email: { type: ["string", "null"] }
+
