@@ -1,0 +1,18 @@
+{
+  "name": "AnDiCare",
+  "short_name": "AnDiCare",
+  "description": "Healthcare at your doorstep.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7fcfd",
+  "theme_color": "#002B73",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
